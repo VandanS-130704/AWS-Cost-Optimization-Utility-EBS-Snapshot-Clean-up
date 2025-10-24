@@ -5,16 +5,16 @@ def lambda_handler(event, context):
 
     # Get all EBS snapshots using a paginator for safety
     active_snapshots = []
-    paginator = ec2.get_paginator('describe_snapshots') # <-- CHANGED
-    for page in paginator.paginate(OwnerIds=['self']): # <-- CHANGED
-        active_snapshots.extend(page['Snapshots']) # <-- CHANGED
+    paginator = ec2.get_paginator('describe_snapshots') 
+    for page in paginator.paginate(OwnerIds=['self']):
+        active_snapshots.extend(page['Snapshots']) 
 
     # Get all active (running) EC2 instance IDs using a paginator
     active_instance_ids = set()
-    paginator = ec2.get_paginator('describe_instances') # <-- CHANGED
-    pages = paginator.paginate(Filters=[{'Name': 'instance-state-name', 'Values': ['running']}]) # <-- CHANGED
+    paginator = ec2.get_paginator('describe_instances') 
+    pages = paginator.paginate(Filters=[{'Name': 'instance-state-name', 'Values': ['running']}]) 
 
-    for page in pages: # <-- CHANGED
+    for page in pages:
         for reservation in page['Reservations']:
             for instance in reservation['Instances']:
                 active_instance_ids.add(instance['InstanceId'])
@@ -22,7 +22,7 @@ def lambda_handler(event, context):
     print(f"Found {len(active_instance_ids)} running instances.")
 
     # Iterate through each snapshot
-    for snapshot in active_snapshots: # <-- CHANGED
+    for snapshot in active_snapshots:
         snapshot_id = snapshot['SnapshotId']
         volume_id = snapshot.get('VolumeId')
 
@@ -36,12 +36,12 @@ def lambda_handler(event, context):
                 volume_response = ec2.describe_volumes(VolumeIds=[volume_id])
                 
                 # Check if volume has any attachments
-                attachments = volume_response['Volumes'][0].get('Attachments', []) # <-- CHANGED
+                attachments = volume_response['Volumes'][0].get('Attachments', [])
 
                 if not attachments:
                     # --- This block is for unattached volumes ---
                     ec2.delete_snapshot(SnapshotId=snapshot_id)
-                    print(f"Deleted EBS snapshot {snapshot_id} as its volume {volume_id} is not attached to any instance.") # <-- CHANGED
+                    print(f"Deleted EBS snapshot {snapshot_id} as its volume {volume_id} is not attached to any instance.")
                 else:
                     # --- This block checks if attachments are to *running* instances ---
                     attached_to_running = False
