@@ -44,6 +44,8 @@ The function is designed to be run on a schedule (e.g., once a week via **EventB
 
 ![Lambda Execution Result](Output.jpg)
 
+![Lambda Execution Result - Deleted Snapshot Output](Deleted-EBS-Snapshot_Output.jpg)
+
 ---
 
 ### 2. **IAM Permissions (Security)**
